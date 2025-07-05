@@ -1,0 +1,13 @@
+<resources>
+    <string name="login">Login</string>
+    <string name="phoneNumber">Phone Number</string>
+    <string name="password">PassCode</string>
+    <string name="forgot_password">Forgot Password</string>
+    <string name="don_t_have_an_account_sign_up_now">Sign Up Now</string>
+    <string name="title_activity_registration_screen">RegistrationScreen</string>
+    <string name="register">Register Account</string>
+    <string name="enter_pin">New Pin</string>
+    <string name="confirm_pin">Confirm Pin</string>
+    <string name="confirm_registration">Confirm Registration</string>
+    <string name="already_have_account_login">Log In</string>
+</resources>
