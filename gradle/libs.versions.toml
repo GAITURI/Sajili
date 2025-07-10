@@ -16,7 +16,7 @@ runtimeAndroid = "1.8.3"
 material3Android = "1.3.2"
 uiAndroid = "1.6.6"
 foundationAndroid = "1.6.6"
-
+composeMaterialIcons= "1.6.7"
 uiToolingPreviewAndroid = "1.8.3"
 storage = "1.5.0"
 uiAndroidVersion = "1.6.8"
@@ -47,7 +47,9 @@ androidx-ui-tooling-preview-android = { group = "androidx.compose.ui", name = "u
 androidx-storage = { group = "androidx.test.services", name = "storage", version.ref = "storage" }
 androidx-compose-compiler = { group = "androidx.compose.compiler", name = "compiler", version.ref = "composeCompiler" }
 androidx-compose-runtime={ group="androidx.compose.runtime", name="runtime"}
+androidx-material-icons-core={group="androidx.compose.material", name= "material-icons-core", version.ref="composeMaterialIcons"}
 ui-android = { group = "androidx.compose.ui", name = "ui-android", version.ref = "uiAndroidVersion" }
+
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }

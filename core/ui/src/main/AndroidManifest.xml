@@ -3,6 +3,11 @@
 
     <application>
         <activity
+            android:name=".CustomerService"
+            android:exported="false"
+            android:label="@string/title_activity_customer_service"
+            android:theme="@style/Theme.Sajili" />
+        <activity
             android:name=".RegistrationScreen"
             android:exported="false"
             android:label="@string/title_activity_registration_screen"

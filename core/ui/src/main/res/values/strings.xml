@@ -10,4 +10,5 @@
     <string name="confirm_pin">Confirm Pin</string>
     <string name="confirm_registration">Confirm Registration</string>
     <string name="already_have_account_login">Log In</string>
+    <string name="title_activity_customer_service">CustomerService</string>
 </resources>

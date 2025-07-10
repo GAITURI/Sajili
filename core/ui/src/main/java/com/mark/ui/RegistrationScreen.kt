@@ -88,7 +88,7 @@ fun RegistrationScreen(
                         .fillMaxHeight(0.85F)
                         .align(Alignment.Center)
                         .offset(y = (-20).dp),
-                    shape = RoundedCornerShape(30.dp),
+                    shape = RoundedCornerShape(50.dp),
                     colors = CardDefaults.cardColors(containerColor = Color.White)
                 ) {
                     Column(
