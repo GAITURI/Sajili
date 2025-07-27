@@ -65,6 +65,8 @@ data class CustomerServiceItem(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CustomerDashboardScreen() {
+    //scaffold is a pre-defined material design layout structure
+    //it gives you slots for common screen elements
     Scaffold(
         topBar = {
             TopAppBar(
@@ -182,26 +184,29 @@ fun CustomerDashboardScreen() {
     ) { paddingValues ->
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
+                .fillMaxSize()// takes up all available space given by scaffold
+                .padding(paddingValues) //avoids overlap with top/bottom bars
                 .background(Color(0xFFF0F0F0))
         ) {
+            //children of this column will be stacked vertically
             //promote and earn section
+            //for promote & earn we use a row to place the text column and the icon side by side
             Card(
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .fillMaxWidth()// card takes the full width of its parent
                     .padding(16.dp)
                     .height(100.dp),
                 shape = RoundedCornerShape(8.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White)
             )
             {
+                //a row lays out its children one after another, horizontally from left to right
                 Row(
                     modifier= Modifier
                         .fillMaxSize()
                         .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    verticalAlignment = Alignment.CenterVertically, //aligns the children of the tow to be centered along the row's vertical axis
+                    horizontalArrangement = Arrangement.SpaceBetween //place the first child(text) at the start of the row and the second child(icon) at the end
                 ){
                     Column {
                         Text("Promote & Earn", fontWeight = FontWeight.Bold, fontSize = 18.sp)
@@ -245,13 +250,14 @@ fun CustomerDashboardScreen() {
                 CustomerServiceItem(Icons.Outlined.Delete, "De-Registration")
 
             )
+            //lazy vertical grid is designed to display a potentially large number of items in a grid format without creating and laying out all items at once
             LazyVerticalGrid(
-                columns = GridCells.Fixed(3),
+                columns = GridCells.Fixed(3), // define a grid with 3 columns
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp), //space between columns
+                verticalArrangement = Arrangement.spacedBy(8.dp) //space between rows
             ) {
                 items(customerServiceItems.size) { index ->
                     val item = customerServiceItems[index]
