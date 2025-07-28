@@ -4,7 +4,7 @@ import retrofit2.http.GET
 import retrofit2.http.POST
 
 //interface for authentication-related API calls to the Spring Boot backend
-interface class AuthService {
+interface  AuthService {
     @POST("api/auth/register")
     suspend fun register(@Body request:RegisterRequest):Response<MessageResponse>
 
@@ -13,6 +13,6 @@ interface class AuthService {
     suspend fun login(@Body request:LoginRequest):Response<AuthResponse>
 
     @GET("api/auth/protected-data")
-    suspend fun getProtectedData(@Header("Authorization") token:String:Response<MessageResponse>
+    suspend fun getProtectedData(@Header("Authorization") token:String):Response<MessageResponse>
 
 }
