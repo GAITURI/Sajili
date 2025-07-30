@@ -1,10 +1,13 @@
+package com.mark.data
+
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import okhttp3.Interceptor
+import okhttp3.OkHttpClient
 import retrofit2.Response
 import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
-import java.lang.Exception
 import java.util.concurrent.TimeUnit
+import kotlin.Exception
 
 //URL OF DEPLOYED SPRING BOOT BACKEND ON RAILWAY needs to be rectified
 const val BASE_URL= "postgresql://postgres:WRwyNDHKOhUVrtpUlmTkuoIuBTLjKjKg@postgres.railway.internal:5432/railway"
@@ -15,18 +18,18 @@ class SajiliApiException(
     cause:Throwable?= null
 ):Exception(message, cause)
 object RetrofitClient{
-    private val gson:Gson= GsonBuilder()
+    private val gson:Gson = GsonBuilder()
         .setLenient()
         .create()
 //A login interceptor for debugging network requests
-private val loggingInterceptor= HttpLoggingInterceptor().apply {
-    level= HttpLoggingInterceptor.Level.BODY
+private val loggingInterceptor = HttpLoggingInterceptor().apply {
+    level = HttpLoggingInterceptor.Level.BODY
 
 }
 
 //interceptor to add JWT Token  to authenticated requests
  //this interceptor needs a way to get the current token but for now we'll make it a lambda for the token
-    fun createAuthInterceptor(getToken: () -> String):Interceptor{
+    fun createAuthInterceptor(getToken: () -> String): Interceptor {
         return Interceptor { chain ->
             val originalRequest= chain.request()
             val token= getToken() //dynamically get the token from
@@ -40,7 +43,7 @@ private val loggingInterceptor= HttpLoggingInterceptor().apply {
     }
     //create a function to create and configure OKHttpClient dynamically based on whether a token is available or not
 
-    fun createOkHttpClient(getToken: () -> String= {null}): OkHttpClient{
+    fun createOkHttpClient(getToken: () -> String= {null}): OkHttpClient {
         return OkHttpClient.Builder()
             .addInterceptor(loggingInterceptor) //add logging for debugging
             .addInterceptor(createAuthInterceptor(getToken)) //add JWT interceptor
@@ -56,11 +59,11 @@ private val loggingInterceptor= HttpLoggingInterceptor().apply {
 //the lazy delegate optimizes performance by avoiding unnecessary setup during app startup
 //the retrofit.builder() is responsible for building the retrofit instance and creating the API Service
 //.addConverterFactory, adds the Gson converter factory to the retrofit instance
-val authService:AuthService by lazy{
+val authService: AuthService by lazy{
   getApiService()
 }
  //function to get API Service, allowing dynamic token provision for authenticated calls
- fun getApiService(getToken: () -> String= {null}) :AuthService{
+ fun getApiService(getToken: () -> String= {null}) : AuthService {
      val okHttpClient= createOkHttpClient(getToken)
      return Retrofit.Builder()
          .baseUrl(BASE_URL)
@@ -74,6 +77,31 @@ val authService:AuthService by lazy{
     suspend fun <T>  safeApiCall(
         apiCall: suspend()-> Response<T>
     ):Result<T>{
+        return try {
+            val response= apiCall()
+            if (response.isSuccessful) {
+                val body= response.body()
+                if (body != null){
+                    Result.success(body)
+                }else{
+                    Result.failure(SajiliApiException("Api returned empty body", response.code()))
+                }
+
+            }else{
+                val errorBodyString= response.errorBody()?.string()
+                val errorResponse= try{
+                    gson.fromJson(errorBodyString, ErrorResponse::class.java)
+                } catch (e:Exception){
+                    null
+                }
+                val errorMessage= errorResponse?.message ?:"Unknown error occurred"
+            Result.failure(SajiliApiException(errorMessage, response.code(),errorResponse))
+            }
+        }
+        catch (e:Exception){
+            //catch network errors, JSON parsing errors
+            Result.failure(e)
+        }
 
     }
 }
