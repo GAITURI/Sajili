@@ -1,5 +1,8 @@
 package com.mark.data
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -7,15 +10,21 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
+
+//managing authentication state in an Android application
 sealed class AuthResult {
-object Loading: AuthResult()
+data object Loading: AuthResult() //is in progress
     data class Success(val message:String? = null, val authResponse: AuthResponse?= null): AuthResult()
-    data class Error(val message: String?): AuthResult()
-    object Idle: AuthResult()
+    data class Error(val message: String?,val statusCode:Int?): AuthResult()
+    data object Idle: AuthResult() //this is the initial state
 
 }
 class AuthViewModel: ViewModel(){
     //mutable stateflow to hold the current state of authentication operations
+    //mutable stateflow is a state holder,
+            //its mutable , its value property can be updated to emit new states
+   // <AuthResult> this is the generic type parameter for the mutable stateflow
+            //it specifies that this sealed class has pre defined states for authentication
     private val _registrationState= MutableStateFlow<AuthResult>(AuthResult.Idle)
     val registrationState: StateFlow<AuthResult> = _registrationState.asStateFlow()
 
@@ -25,7 +34,7 @@ class AuthViewModel: ViewModel(){
 //UI input states (mutable, used by COMPOSE UI)
     var phoneNumberInput by mutableStateOf("")
     var passwordInput by mutableStateOf("")
-
+     var confirmPinInput by mutableStateOf("")
 
 
 //user authentication status and JWT token
@@ -39,10 +48,18 @@ class AuthViewModel: ViewModel(){
 
 
     fun register(){
+        if (phoneNumberInput.isBlank() || passwordInput.isBlank() ||confirmPinInput.isBlank()){
+            _registrationState.value= AuthResult.Error("All fields are required", statusCode = -1)
+            return
+        }
+        if (passwordInput != confirmPinInput) {
+            _registrationState.value = AuthResult.Error("PINs do not match.", statusCode = -1)
+            return
+        }
         _registrationState.value= AuthResult.Loading
         viewModelScope.launch{
             try {
-                val request = RegisterRequest(phoneNumber,pin, confirmPin)
+                val request = RegisterRequest(phoneNumber= phoneNumberInput, pin=passwordInput,confirmPin=confirmPinInput)
                 val result = RetrofitClient.safeApiCall { RetrofitClient.authService.register(request) }
 
             result.onSuccess { response ->
@@ -58,13 +75,13 @@ class AuthViewModel: ViewModel(){
                     else -> "An unexpected error occurred: ${throwable.message}"
                 }
                 val statusCode = (throwable as? SajiliApiException)?.statusCode
-                _registrationState.value = AuthResult.Error(errorMessage, statusCode)
+                _registrationState.value = AuthResult.Error(errorMessage,statusCode)
                 println("Registration Error: ${throwable.stackTraceToString()}")
 
             }
             }
             catch (e:Exception){
-                _registrationState.value = AuthResult.Error("Network error: ${e.message}")
+                _registrationState.value = AuthResult.Error("Network error: ${e.message}", statusCode = -1 )
                 println("Network Error during registration: ${e.stackTraceToString()}")
             }
         }
@@ -74,7 +91,7 @@ fun login(){
     _loginState.value = AuthResult.Loading
     viewModelScope.launch {
         try{
-            val request = LoginRequest(phoneNumber,pin)
+            val request = LoginRequest(phoneNumber=phoneNumberInput,pin=passwordInput)
             val result = RetrofitClient.safeApiCall { RetrofitClient.authService.login(request) }
         result.onSuccess { authResponse->
             jwtToken= authResponse.jwt // store token
@@ -96,7 +113,7 @@ fun login(){
         }
 
         } catch (e:Exception){
-            _loginState.value= AuthResult.Error("Network error: ${e.message}")
+            _loginState.value= AuthResult.Error("Network error: ${e.message}", statusCode = -1)
             println("Network error during login: ${e.stackTraceToString()}")
         }
     }

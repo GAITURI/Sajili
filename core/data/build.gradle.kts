@@ -1,6 +1,8 @@
+
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.compose.compiler)
 }
 
 android {
@@ -12,6 +14,9 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
+    }
+    buildFeatures{
+        compose= true
     }
 
     buildTypes {
@@ -38,6 +43,9 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.converter.gson)
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation(libs.okhttp.loggingInterceptor)
+    implementation(libs.androidx.runtime)
     implementation(libs.androidx.lifecycle.viewmodel.android)
     implementation(libs.androidx.lifecycle.viewmodel.android)
     testImplementation(libs.junit)
