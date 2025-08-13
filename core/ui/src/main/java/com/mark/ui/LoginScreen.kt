@@ -30,6 +30,8 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,6 +50,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.mark.data.AuthResult
+import com.mark.data.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 
@@ -57,10 +61,22 @@ fun AppToolbar(title:String){}
 
 @Composable
  fun LoginScreen(
-onLoginClick:(String, String) -> Unit,
+onLoginSuccess:(String, String) -> Unit,
 onForgotPasswordClick:()->Unit,
-onSignUpClick:()->Unit
+onSignUpClick:()->Unit,
+viewModel:AuthViewModel = viewModel()
  ){
+     //collect the state from the viewmodel
+     val loginState by viewModel.loginState.collectAsState()
+    val isLoading= loginState is AuthResult.Loading
+
+    LaunchedEffect(key1=loginState) {
+        if(loginState is AuthResult.Success){
+          onLoginSuccess()
+          viewModel.clearAuthStates()
+        }
+
+    }
     //state variables to hold the user input
     var phoneNumber by remember { mutableStateOf("") }
     var passCode by remember{ mutableStateOf("") }
@@ -115,8 +131,8 @@ onSignUpClick:()->Unit
                     Spacer(modifier = Modifier.height(80.dp))
                     //phone input field
                     OutlinedTextField(
-                        value = phoneNumber,
-                        onValueChange = { phoneNumber = it },
+                        value = viewModel.phoneNumberInput,
+                        onValueChange = { viewModel.phoneNumberInput = it },
                         label = { Text(stringResource(id = R.string.phoneNumber)) },
                         leadingIcon = { Icon(Icons.Default.Call, contentDescription = "Registered Phone") },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -138,8 +154,8 @@ onSignUpClick:()->Unit
                     Spacer(modifier = Modifier.height(20.dp))
                     //passwordInputField
                     OutlinedTextField(
-                        value = passCode,
-                        onValueChange = { passCode = it },
+                        value = viewModel.passwordInput,
+                        onValueChange = { viewModel.passwordInput = it },
                         label = { Text(stringResource(id = R.string.password)) },
                         leadingIcon = { Icon(Icons.Default.Lock, contentDescription = "Lock Icon") },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -174,7 +190,7 @@ onSignUpClick:()->Unit
                     Spacer(modifier = Modifier.height(15.dp))
 
                     Button(
-                        onClick = { onLoginClick(phoneNumber, passCode) },
+                        onClick = { viewModel.login() },
                         modifier = Modifier
                             .width(300.dp)
                             .height(50.dp),
@@ -224,7 +240,7 @@ onSignUpClick:()->Unit
 fun LoginScreenPreview(){
 
     LoginScreen(
-        onLoginClick = {phoneNumber,passcode->},
+        onLoginSuccess = {},
         onForgotPasswordClick = {},
         onSignUpClick = {})
 

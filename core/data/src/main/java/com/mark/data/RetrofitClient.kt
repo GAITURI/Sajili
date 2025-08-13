@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit
 import kotlin.Exception
 
 //URL OF DEPLOYED SPRING BOOT BACKEND ON RAILWAY needs to be rectified
-const val BASE_URL= "postgresql://postgres:WRwyNDHKOhUVrtpUlmTkuoIuBTLjKjKg@postgres.railway.internal:5432/railway"
+const val BASE_URL= "http://postgres-production-45b8.up.railway.app"
 
 
 class SajiliApiException(

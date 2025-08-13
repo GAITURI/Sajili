@@ -56,6 +56,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.mark.data.User
 
 
 //data class to represent a customer service item
@@ -68,13 +69,14 @@ class CustomerServiceActivity: ComponentActivity(){
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            CustomerDashboardScreen()
+            var currentUser by re
+            CustomerDashboardScreen(user= currentUser)
         }
     }
 }
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CustomerDashboardScreen() {
+fun CustomerDashboardScreen(user: User) {
     //scaffold is a pre-defined material design layout structure
     //it gives you slots for common screen elements
     Scaffold(
@@ -90,8 +92,8 @@ fun CustomerDashboardScreen() {
                         }
                         Spacer(Modifier.width(8.dp))
                         Column {
-                            Text("User", fontWeight = FontWeight.Bold, fontSize = 20.sp)
-                            Text("XXXXXXX", fontSize = 14.sp)
+                            Text(user.name, fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                            Text(user.phoneNumber, fontSize = 14.sp)
                         }
                     }
                 },
