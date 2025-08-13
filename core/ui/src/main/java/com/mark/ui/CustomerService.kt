@@ -48,6 +48,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -56,6 +58,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.mark.data.CustomerProfileViewModel
+import com.mark.data.CustomerProfileViewModelFactory
+import com.mark.data.Profile
+import com.mark.data.ProfileUiState
 import com.mark.data.User
 
 
@@ -69,14 +75,15 @@ class CustomerServiceActivity: ComponentActivity(){
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            var currentUser by re
-            CustomerDashboardScreen(user= currentUser)
         }
     }
 }
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CustomerDashboardScreen(user: User) {
+fun CustomerDashboardScreen() {
+    val factory = CustomerProfileViewModelFactory(profileService = Profile)
+
+    val  uiState by viewModel.uiState.collectAsState()
     //scaffold is a pre-defined material design layout structure
     //it gives you slots for common screen elements
     Scaffold(
@@ -92,8 +99,21 @@ fun CustomerDashboardScreen(user: User) {
                         }
                         Spacer(Modifier.width(8.dp))
                         Column {
-                            Text(user.name, fontWeight = FontWeight.Bold, fontSize = 20.sp)
-                            Text(user.phoneNumber, fontSize = 14.sp)
+                            when(uiState){
+                                is ProfileUiState.Loading->{
+                                    Text("Loading...", fontSize = 14.sp)
+                                }
+                                is ProfileUiState.Success ->{
+                                  val profile= (uiState as ProfileUiState.Success).profile
+                                    //a placeholder  for the user's name
+                                    Text("Agent", fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                                    Text(profile.phoneNumber, fontSize = 14.sp)
+                                }
+                                is ProfileUiState.Error ->{
+                                    Text("Error: ${(uiState as ProfileUiState.Error).message}", fontSize = 14.sp)
+                                }
+                            }
+
                         }
                     }
                 },

@@ -19,6 +19,32 @@ data object Loading: AuthResult() //is in progress
     data object Idle: AuthResult() //this is the initial state
 
 }
+//profile responseUI State Sealed class
+sealed class ProfileUiState{
+    data object Loading:ProfileUiState()
+    data class Success(val profile: User):ProfileUiState()
+    data class Error(val message: String):ProfileUiState()
+
+}
+class CustomerProfileViewModel(
+    private val profileService:Profile
+):ViewModel(){
+    private val _uiState = MutableStateFlow<ProfileUiState>(ProfileUiState.Loading)
+    val uiState:StateFlow<ProfileUiState> = _uiState
+    init {
+        fetchUserProfile()
+    }
+    private fun fetchUserProfile(){
+        viewModelScope.launch {
+            try{
+                val profilePhone = profileService.getUserProfile()
+                _uiState.value= ProfileUiState.Success(profilePhone)
+            }catch (e:Exception){
+                _uiState.value= ProfileUiState.Error("Failed to fetch profile:${e.message}")
+            }
+        }
+    }
+}
 class AuthViewModel: ViewModel(){
     //mutable stateflow to hold the current state of authentication operations
     //mutable stateflow is a state holder,
