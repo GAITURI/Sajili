@@ -57,6 +57,7 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.material.icons.core)
     implementation(libs.ui.android)
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.9.0")
     implementation(libs.androidx.espresso.core)
     implementation(project(":core:data"))
     implementation(project(":core:data"))

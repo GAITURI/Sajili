@@ -50,6 +50,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mark.data.AuthResult
 import com.mark.data.AuthViewModel
 
@@ -72,7 +73,10 @@ viewModel:AuthViewModel = viewModel()
 
     LaunchedEffect(key1=loginState) {
         if(loginState is AuthResult.Success){
-          onLoginSuccess()
+            val successState =loginState as AuthResult.Success
+            val token= successState.authResponse?.jwt?:""
+            val message = successState.message?:"Login Successful"
+          onLoginSuccess(token, message)
           viewModel.clearAuthStates()
         }
 
@@ -240,7 +244,9 @@ viewModel:AuthViewModel = viewModel()
 fun LoginScreenPreview(){
 
     LoginScreen(
-        onLoginSuccess = {},
+        onLoginSuccess = {token, message->
+
+        },
         onForgotPasswordClick = {},
         onSignUpClick = {})
 

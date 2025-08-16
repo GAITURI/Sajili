@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 
 class CustomerProfileViewModelFactory(
-    private val profileService:Profile
+    private val profileService: Profile
 
 ):ViewModelProvider.Factory{
     override fun <T:ViewModel>create(modelClass:Class<T>):T{
