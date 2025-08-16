@@ -3,12 +3,17 @@
 
     <application>
         <activity
-            android:name="com.mark.ui.CustomerServiceActivity"
+            android:name=".KycIntro.KycIntroScreen"
+            android:exported="false"
+            android:label="@string/title_activity_kyc_intro_screen"
+            android:theme="@style/Theme.Sajili" />
+        <activity
+            android:name=".CustomerServiceActivity"
             android:exported="false"
             android:label="@string/title_activity_customer_service"
             android:theme="@style/Theme.Sajili" />
         <activity
-            android:name="RegistrationScreen"
+            android:name=".RegistrationScreen"
             android:exported="false"
             android:label="@string/title_activity_registration_screen"
             android:theme="@style/Theme.Sajili" />

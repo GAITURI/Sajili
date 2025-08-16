@@ -11,4 +11,6 @@
     <string name="confirm_registration">Confirm Registration</string>
     <string name="already_have_account_login">Log In</string>
     <string name="title_activity_customer_service">CustomerService</string>
+    <string name="title_activity_kyc_intro_screen">KycIntroScreen</string>
+    <string name="back_to_dashboard">Back</string>
 </resources>
