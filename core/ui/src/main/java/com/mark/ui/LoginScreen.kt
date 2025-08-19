@@ -51,8 +51,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.mark.data.AuthResult
-import com.mark.data.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 
@@ -65,7 +63,7 @@ fun AppToolbar(title:String){}
 onLoginSuccess:(String, String) -> Unit,
 onForgotPasswordClick:()->Unit,
 onSignUpClick:()->Unit,
-viewModel:AuthViewModel = viewModel()
+viewModel: AuthViewModel = viewModel()
  ){
      //collect the state from the viewmodel
      val loginState by viewModel.loginState.collectAsState()

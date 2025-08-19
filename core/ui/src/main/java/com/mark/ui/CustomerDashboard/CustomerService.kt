@@ -1,4 +1,4 @@
-package com.mark.ui
+package com.mark.ui.CustomerDashboard
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -59,10 +59,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.mark.data.CustomerProfileViewModel
-import com.mark.data.CustomerProfileViewModelFactory
 import com.mark.data.Profile
-import com.mark.data.ProfileUiState
 
 
 //data class to represent a customer service item
@@ -301,7 +298,7 @@ fun CustomerDashboardScreen(profileService: Profile) {
 
 }
 @Composable
-fun CustomerServiceGridItem(item:CustomerServiceItem) {
+fun CustomerServiceGridItem(item: CustomerServiceItem) {
     Card(
         modifier = Modifier
             .fillMaxWidth()

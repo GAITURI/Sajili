@@ -1,10 +1,15 @@
-package com.mark.data
+package com.mark.ui
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.mark.data.AuthResponse
+import com.mark.data.LoginRequest
+import com.mark.data.RegisterRequest
+import com.mark.data.RetrofitClient
+import com.mark.data.SajiliApiException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,31 +25,8 @@ data object Loading: AuthResult() //is in progress
 
 }
 //profile responseUI State Sealed class
-sealed class ProfileUiState{
-    data object Loading:ProfileUiState()
-    data class Success(val profile: User):ProfileUiState()
-    data class Error(val message: String):ProfileUiState()
 
-}
-class CustomerProfileViewModel(
-    private val profileService:Profile
-):ViewModel(){
-    private val _uiState = MutableStateFlow<ProfileUiState>(ProfileUiState.Loading)
-    val uiState:StateFlow<ProfileUiState> = _uiState
-    init {
-        fetchUserProfile()
-    }
-    private fun fetchUserProfile(){
-        viewModelScope.launch {
-            try{
-                val profilePhone = profileService.getUserProfile()
-                _uiState.value= ProfileUiState.Success(profilePhone)
-            }catch (e:Exception){
-                _uiState.value= ProfileUiState.Error("Failed to fetch profile:${e.message}")
-            }
-        }
-    }
-}
+
 class AuthViewModel: ViewModel(){
     //mutable stateflow to hold the current state of authentication operations
     //mutable stateflow is a state holder,
@@ -69,7 +51,7 @@ class AuthViewModel: ViewModel(){
 
 
     //function to get the authenticated API service(provides current JWT token)
-    private fun getAuthenticatedApiService()= RetrofitClient.getApiService{jwtToken}
+    private fun getAuthenticatedApiService()= RetrofitClient.getApiService { jwtToken }
 
 
 
@@ -86,7 +68,8 @@ class AuthViewModel: ViewModel(){
         viewModelScope.launch{
             try {
                 val request = RegisterRequest(phoneNumber= phoneNumberInput, pin=passwordInput,confirmPin=confirmPinInput)
-                val result = RetrofitClient.safeApiCall { RetrofitClient.authService.register(request) }
+                val result =
+                    RetrofitClient.safeApiCall { RetrofitClient.authService.register(request) }
 
             result.onSuccess { response ->
                 _registrationState.value = AuthResult.Success(response.message)
@@ -101,13 +84,14 @@ class AuthViewModel: ViewModel(){
                     else -> "An unexpected error occurred: ${throwable.message}"
                 }
                 val statusCode = (throwable as? SajiliApiException)?.statusCode
-                _registrationState.value = AuthResult.Error(errorMessage,statusCode)
+                _registrationState.value = AuthResult.Error(errorMessage, statusCode)
                 println("Registration Error: ${throwable.stackTraceToString()}")
 
             }
             }
             catch (e:Exception){
-                _registrationState.value = AuthResult.Error("Network error: ${e.message}", statusCode = -1 )
+                _registrationState.value =
+                    AuthResult.Error("Network error: ${e.message}", statusCode = -1)
                 println("Network Error during registration: ${e.stackTraceToString()}")
             }
         }

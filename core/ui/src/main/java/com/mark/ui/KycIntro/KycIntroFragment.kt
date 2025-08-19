@@ -17,9 +17,9 @@ class KycIntroFragment:Fragment (){
             setContent {
                 KycIntroScreen(
                     onBackClick={
-                        parentFragment.popBackStack()
-                    },
-                    onBeginClick={
+//                        parentFragment.popBackStack()
+                                },
+                    onStartVerificationClick ={
 
                     }
                 )

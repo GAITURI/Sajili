@@ -1,7 +1,8 @@
-package com.mark.data
+package com.mark.ui.CustomerDashboard
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.mark.data.Profile
 
 class CustomerProfileViewModelFactory(
     private val profileService: Profile

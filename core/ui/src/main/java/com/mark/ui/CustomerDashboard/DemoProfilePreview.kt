@@ -1,7 +1,6 @@
-package com.mark.ui
+package com.mark.ui.CustomerDashboard
 
 import com.mark.data.Profile
-import com.mark.data.ProfileServiceImpl
 import com.mark.data.User
 import kotlinx.coroutines.delay
 //a fake implementation for use in Jetpack Compose @Preview functions
