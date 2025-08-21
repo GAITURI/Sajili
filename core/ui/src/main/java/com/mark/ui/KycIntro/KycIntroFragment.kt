@@ -19,7 +19,7 @@ class KycIntroFragment:Fragment (){
                     onBackClick={
 //                        parentFragment.popBackStack()
                                 },
-                    onStartVerificationClick ={
+                    onConfirmVerificationClick ={
 
                     }
                 )

@@ -3,6 +3,11 @@
 
     <application>
         <activity
+            android:name=".KycIntro.ServiceSelectionKyc"
+            android:exported="false"
+            android:label="@string/title_activity_service_selection_kyc"
+            android:theme="@style/Theme.Sajili" />
+        <activity
             android:name=".KycIntro.KycIntroScreen"
             android:exported="false"
             android:label="@string/title_activity_kyc_intro_screen"
