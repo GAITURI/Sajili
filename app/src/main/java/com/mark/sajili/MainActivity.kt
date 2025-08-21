@@ -1,13 +1,21 @@
 package com.mark.sajili
 
 import android.os.Bundle
+import android.provider.ContactsContract
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.mark.data.Profile
 import com.mark.sajili.ui.theme.SajiliTheme
+import com.mark.ui.AuthAgentDestination
+import com.mark.ui.CustomerDashboard.CustomerDashboardScreen
+import com.mark.ui.LoginScreen
+import com.mark.ui.RegistrationScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -29,7 +37,7 @@ fun MainApp(){
         LoginScreen(
             onLoginSuccess ={_, _ ->
 //                on successful login navigate to the customer dashboard
-                navController.navigatet(AuthAgentDestination.CUSTOMER_DASHBOARD_ROUTE)
+                navController.navigate(AuthAgentDestination.CUSTOMER_DASHBOARD_ROUTE)
             },
             onForgotPasswordClick={},
             onSignUpClick={
@@ -53,16 +61,11 @@ fun MainApp(){
 
     }
 //        Composable for the Registration Screen,
-        composable(AuthAgentDestination.REGISTRATION_ROUTE){
-            RegistrationScreen
+        composable(AuthAgentDestination.CUSTOMER_DASHBOARD_ROUTE){
+            CustomerDashboardScreen(profileService)
         }
 
     }
 }
 @Preview(showBackground = true)
 @Composable
-fun GreetingPreview() {
-    SajiliTheme {
-        Greeting("Android")
-    }
-}

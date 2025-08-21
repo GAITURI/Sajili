@@ -1,13 +1,20 @@
 package com.mark.data
 
+import androidx.test.espresso.core.internal.deps.dagger.Module
+import androidx.test.espresso.core.internal.deps.dagger.Provides
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Response
 import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
+import javax.inject.Named
+import javax.inject.Singleton
 import kotlin.Exception
 
 //URL OF DEPLOYED SPRING BOOT BACKEND ON RAILWAY needs to be rectified
@@ -117,4 +124,84 @@ val authService: AuthService by lazy{
         }
 
     }
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+object NetworkModule{
+
+    @Singleton
+    @Provides
+    fun provideGSON():Gson{
+        return GsonBuilder()
+            .setLenient()
+            .create()
+    }
+
+
+    @Singleton
+    @Provides
+    @Named("LoggingInterceptor")
+
+    fun provideLoggingIntercepor():Interceptor
+    {
+        return HttpLoggingInterceptor().apply {
+            level = HttpLoggingInterceptor.Level.BODY
+        }
+    }
+       @Singleton
+        @Provides
+        @Named("AuthInterceptor")
+        fun provideAuthInterceptor(tokenRepository:TokenRepository):Interceptor{
+            return Interceptor{ chain->
+                val originalRequest= chain.request()
+                val token= tokenRepository.getToken()
+                val requestBuilder= originalRequest.newBuilder()
+                if (!token.isNullOrBlank()){
+                    requestBuilder.header("Authorization", "Bearer $token")
+                }
+                chain.proceed(requestBuilder.build())
+
+            }
+        }
+//    oKHTTP Client that includes the Auth Interceptor
+    @Singleton
+    @Provides
+    @Named("AuthOkHttpClient")
+    fun provideAuthOkHttpClient(
+        @Named("LoggingInterceptor")
+        loggingInterceptor: Interceptor,
+        @Named("AuthInterceptor")
+        authInterceptor: Interceptor
+
+    ):OkHttpClient{
+        return OkHttpClient.Builder()
+            .addInterceptor(loggingInterceptor)
+            .addInterceptor(authInterceptor)
+            .connectTimeout(30,TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
+            .build()
+    }
+//    retrofit instance for authenticated
+    @Singleton
+    @Provides
+    @Named("AuthRetrofit")
+    fun provideAuthRetrofit(
+        @Named("AuthOkHttpClient")
+        okHttpClient: OkHttpClient,
+        gson: Gson
+    ):Retrofit{
+        return Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create(gson))
+            .build()
+    }
+    @Singleton
+    @Provides
+    fun provideProfileService(retrofit: Retrofit):Profile{
+        return retrofit.create(Profile::class.java)
+    }
+
 }
