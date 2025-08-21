@@ -66,6 +66,7 @@ dependencies {
     implementation(project(":core:data"))
     implementation(project(":core:data"))
     implementation(project(":core:data"))
+    implementation(libs.hilt.android)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

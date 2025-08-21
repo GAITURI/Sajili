@@ -1,5 +1,6 @@
 package com.mark.sajili
 
+import android.app.Application
 import android.os.Bundle
 import android.provider.ContactsContract
 import androidx.activity.ComponentActivity
@@ -16,7 +17,13 @@ import com.mark.ui.AuthAgentDestination
 import com.mark.ui.CustomerDashboard.CustomerDashboardScreen
 import com.mark.ui.LoginScreen
 import com.mark.ui.RegistrationScreen
+import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.HiltAndroidApp
+import dagger.hilt.android.qualifiers.ApplicationContext
 
+
+
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,10 +69,11 @@ fun MainApp(){
     }
 //        Composable for the Registration Screen,
         composable(AuthAgentDestination.CUSTOMER_DASHBOARD_ROUTE){
-            CustomerDashboardScreen(profileService)
+            CustomerDashboardScreen(
+                profileService = TODO()
+            )
         }
 
     }
 }
-@Preview(showBackground = true)
-@Composable
+
