@@ -1,7 +1,10 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
+    id("kotlin-kapt")
+    alias(libs.plugins.hilt)
     alias(libs.plugins.compose.compiler)
+
 }
 
 android {
@@ -66,6 +69,9 @@ dependencies {
     implementation(project(":core:data"))
     implementation(project(":core:data"))
     implementation(project(":core:data"))
+    implementation(libs.hilt.android)
+    implementation(libs.androidx.hilt.navigation.compose)
+    kapt(libs.hilt.compiler)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

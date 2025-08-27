@@ -6,14 +6,18 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mark.data.AuthResponse
+import com.mark.data.AuthService
 import com.mark.data.LoginRequest
+import com.mark.data.NetworkModule.safeApiCall
 import com.mark.data.RegisterRequest
-import com.mark.data.RetrofitClient
 import com.mark.data.SajiliApiException
+import com.mark.data.TokenRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 
 //managing authentication state in an Android application
@@ -26,8 +30,11 @@ data object Loading: AuthResult() //is in progress
 }
 //profile responseUI State Sealed class
 
-
-class AuthViewModel: ViewModel(){
+@HiltViewModel
+class AuthViewModel @Inject constructor(
+private val authService:AuthService, //inject AuthService
+private val tokenRepository: TokenRepository //inject token repository
+): ViewModel(){
     //mutable stateflow to hold the current state of authentication operations
     //mutable stateflow is a state holder,
             //its mutable , its value property can be updated to emit new states
@@ -49,9 +56,12 @@ class AuthViewModel: ViewModel(){
     var isAuthenticated by mutableStateOf(false)
     var jwtToken by mutableStateOf<String?>(null)
 
+    init {
+        jwtToken= tokenRepository.getToken()
+        isAuthenticated= jwtToken != null
+    }
 
     //function to get the authenticated API service(provides current JWT token)
-    private fun getAuthenticatedApiService()= RetrofitClient.getApiService { jwtToken }
 
 
 
@@ -68,8 +78,7 @@ class AuthViewModel: ViewModel(){
         viewModelScope.launch{
             try {
                 val request = RegisterRequest(phoneNumber= phoneNumberInput, pin=passwordInput,confirmPin=confirmPinInput)
-                val result =
-                    RetrofitClient.safeApiCall { RetrofitClient.authService.register(request) }
+                val result = safeApiCall { authService.register(request) }
 
             result.onSuccess { response ->
                 _registrationState.value = AuthResult.Success(response.message)
@@ -102,10 +111,11 @@ fun login(){
     viewModelScope.launch {
         try{
             val request = LoginRequest(phoneNumber=phoneNumberInput,pin=passwordInput)
-            val result = RetrofitClient.safeApiCall { RetrofitClient.authService.login(request) }
+            val result = safeApiCall { authService.login(request) }
         result.onSuccess { authResponse->
             jwtToken= authResponse.jwt // store token
             isAuthenticated = jwtToken !=null //update auth status
+            tokenRepository.saveToken(jwtToken!!)
             _loginState.value = AuthResult.Success("Login Successful!", authResponse)
 
             passwordInput=""
