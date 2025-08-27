@@ -67,6 +67,7 @@ androidx-lifecycle-viewmodel-android = { group = "androidx.lifecycle", name = "l
 androidx-navigation-compose-jvmstubs = { group = "androidx.navigation", name = "navigation-compose-jvmstubs", version.ref = "navigationComposeJvmstubs" }
 hilt-android={module="com.google.dagger:hilt-android", version.ref="hilt"}
 hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hilt" }
+androidx-hilt-navigation-compose={module="androidx.hilt:hilt-navigation-compose", version="1.0.0"}
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }

@@ -8,8 +8,8 @@ import androidx.lifecycle.viewModelScope
 import com.mark.data.AuthResponse
 import com.mark.data.AuthService
 import com.mark.data.LoginRequest
+import com.mark.data.NetworkModule.safeApiCall
 import com.mark.data.RegisterRequest
-import com.mark.data.RetrofitClient
 import com.mark.data.SajiliApiException
 import com.mark.data.TokenRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -78,7 +78,7 @@ private val tokenRepository: TokenRepository //inject token repository
         viewModelScope.launch{
             try {
                 val request = RegisterRequest(phoneNumber= phoneNumberInput, pin=passwordInput,confirmPin=confirmPinInput)
-                val result = RetrofitClient.safeApiCall { RetrofitClient.authService.register(request) }
+                val result = safeApiCall { authService.register(request) }
 
             result.onSuccess { response ->
                 _registrationState.value = AuthResult.Success(response.message)
@@ -111,10 +111,11 @@ fun login(){
     viewModelScope.launch {
         try{
             val request = LoginRequest(phoneNumber=phoneNumberInput,pin=passwordInput)
-            val result = RetrofitClient.safeApiCall { RetrofitClient.authService.login(request) }
+            val result = safeApiCall { authService.login(request) }
         result.onSuccess { authResponse->
             jwtToken= authResponse.jwt // store token
             isAuthenticated = jwtToken !=null //update auth status
+            tokenRepository.saveToken(jwtToken!!)
             _loginState.value = AuthResult.Success("Login Successful!", authResponse)
 
             passwordInput=""

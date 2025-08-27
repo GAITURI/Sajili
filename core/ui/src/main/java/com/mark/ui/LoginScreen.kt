@@ -50,6 +50,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -63,7 +64,7 @@ fun AppToolbar(title:String){}
 onLoginSuccess:(String, String) -> Unit,
 onForgotPasswordClick:()->Unit,
 onSignUpClick:()->Unit,
-viewModel: AuthViewModel = viewModel()
+viewModel: AuthViewModel = hiltViewModel()
  ){
      //collect the state from the viewmodel
      val loginState by viewModel.loginState.collectAsState()
