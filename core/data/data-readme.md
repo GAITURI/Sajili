@@ -8,9 +8,10 @@ This module is composed of several key components that work together to handle d
 
    AuthService.kt & Profile.kt
 
-        What they do: These are Retrofit interfaces that define the API endpoints for authentication (/login, /register) and fetching a user's profile (/api/profile/profile). They serve as the "contracts" for your network communication.
-
-        How they work: Hilt, configured by the NetworkModule, provides a concrete implementation of these interfaces that Retrofit generates at runtime. The ViewModel then calls the methods on this generated implementation to make network requests.
+        What they do: These are Retrofit interfaces that define the API endpoints for authentication (/login, /register) and fetching a user's profile (/api/profile/profile).
+        They serve as the "contracts" for your network communication.
+        How they work: Hilt, configured by the NetworkModule, provides a concrete implementation of these interfaces that Retrofit generates at runtime.
+        The ViewModel then calls the methods on this generated implementation to make network requests.
 
 2. Token Management
 

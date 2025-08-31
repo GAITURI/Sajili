@@ -14,4 +14,5 @@
     <string name="title_activity_kyc_intro_screen">KycIntroScreen</string>
     <string name="back_to_dashboard">Back</string>
     <string name="title_activity_service_selection_kyc">ServiceSelectionKyc</string>
+    <string name="title_activity_new_user_reg">NewUserReg</string>
 </resources>

@@ -3,6 +3,11 @@
 
     <application>
         <activity
+            android:name=".NewUserReg"
+            android:exported="false"
+            android:label="@string/title_activity_new_user_reg"
+            android:theme="@style/Theme.Sajili" />
+        <activity
             android:name=".KycIntro.ServiceSelectionKyc"
             android:exported="false"
             android:label="@string/title_activity_service_selection_kyc"
