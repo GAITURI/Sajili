@@ -40,7 +40,9 @@ fun MainApp(){
 //                on successful login navigate to the customer dashboard
                 navController.navigate(AuthAgentDestination.CUSTOMER_DASHBOARD_ROUTE)
             },
-            onForgotPasswordClick={},
+            onForgotPasswordClick={
+                navController.navigate(AuthAgentDestination.CUSTOMER_DASHBOARD_ROUTE)
+            },
             onSignUpClick={
 //                navigate to the registration screen
                 navController.navigate(AuthAgentDestination.REGISTRATION_ROUTE)

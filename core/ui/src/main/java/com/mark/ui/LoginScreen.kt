@@ -111,7 +111,7 @@ viewModel: AuthViewModel = hiltViewModel()
                     .fillMaxHeight(0.85F)
                     .align(Alignment.Center)
                     .offset(y = (-20).dp),
-                shape = RoundedCornerShape(30.dp),
+                shape = RoundedCornerShape(50.dp),
                 colors= CardDefaults.cardColors(containerColor = Color.White)
 
             ) {
@@ -131,7 +131,7 @@ viewModel: AuthViewModel = hiltViewModel()
                         color = Color.Black,
                         modifier = Modifier.fillMaxWidth()
                     )
-                    Spacer(modifier = Modifier.height(80.dp))
+                    Spacer(modifier = Modifier.height(60.dp))
                     //phone input field
                     OutlinedTextField(
                         value = viewModel.phoneNumberInput,
@@ -141,17 +141,9 @@ viewModel: AuthViewModel = hiltViewModel()
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(50.dp)
-                            .border(1.dp, Color.Gray, RoundedCornerShape(6.dp)),
-//                        colors = TextFieldDefaults.outlinedTextFieldColors(
-//                            textColor = Color.Black,
-//                            focusedBorderColor = MaterialTheme.colorScheme.primary,
-//                            unfocusedBorderColor = Color.Gray,
-//                            cursorColor = MaterialTheme.colorScheme.primary,
-//                            placeholderColor = Color.Black,
-//                            leadingIconColor = Color.Black
-//                        ),
-                        singleLine = true
+                            .height(60.dp),
+                        singleLine = true,
+                        shape= RoundedCornerShape(8.dp)
                     )
 
                     Spacer(modifier = Modifier.height(20.dp))
@@ -163,31 +155,12 @@ viewModel: AuthViewModel = hiltViewModel()
                         leadingIcon = { Icon(Icons.Default.Lock, contentDescription = "Lock Icon") },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                         visualTransformation = if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
-//                        trailingIcon = {
-//                            val image = if (passwordVisibility) {
-//                                Icons.Filled.Visibility
-//                            }else{ Icons.Filled.VisibilityOff}
-//                            IconButton(onClick = { passwordVisibility = !passwordVisibility }) {
-//                                Icon(
-//                                    imageVector = image,
-//                                    contentDescription = "Toggle password visibility"
-//                                )
-//                            }
-//                        },
+//
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(50.dp)
-                            .border(1.dp, Color.Gray, RoundedCornerShape(8.dp)),
-//                        colors = TextFieldDefaults.outlinedTextFieldColors(
-//                            textColor = Color.Black,
-//                            focusedBorderColor = MaterialTheme.colorScheme.primary,
-//                            unfocusedBorderColor = Color.Gray,
-//                            cursorColor = MaterialTheme.colorScheme.primary,
-//                            placeholderColor = Color.Black,
-//                            leadingIconColor = Color.Black,
-//                            trailingIconColor = Color.Black
-//                        ),
-                        singleLine = true
+                            .height(50.dp),
+                            shape= RoundedCornerShape(8.dp),
+                            singleLine = true
                     )
 
                     Spacer(modifier = Modifier.height(15.dp))
