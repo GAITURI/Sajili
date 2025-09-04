@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" >
 
     <application>
         <activity
-            android:name=".NewUserReg"
+            android:name=".kyc.verify"
+            android:exported="false"
+            android:label="@string/title_activity_verify"
+            android:theme="@style/Theme.Sajili" />
+        <activity
+            android:name=".kyc.NewUserReg"
             android:exported="false"
             android:label="@string/title_activity_new_user_reg"
             android:theme="@style/Theme.Sajili" />
