@@ -8,12 +8,8 @@ import retrofit2.http.POST
 
 //interface for authentication-related API calls to the Spring Boot backend
 interface  AuthService {
-    @POST("api/auth/register")
-    suspend fun register(@Body request: RegisterRequest):Response<MessageResponse>
-
-
-    @POST("api/auth/login")
-    suspend fun login(@Body request: LoginRequest):Response<AuthResponse>
+    @POST("api/auth/verify_token")
+    suspend fun verifyToken(@Body request: FirebaseTokenRequest):Response<AuthResponse>
 
     @GET("api/auth/protected-data")
     suspend fun getProtectedData(@Header("Authorization") token:String):Response<MessageResponse>

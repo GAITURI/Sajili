@@ -16,4 +16,7 @@
     <string name="title_activity_service_selection_kyc">ServiceSelectionKyc</string>
     <string name="title_activity_new_user_reg">NewUserReg</string>
     <string name="title_activity_verify">verify</string>
+    <string name="send_sms_code">Code Sent</string>
+    <string name="title_activity_confirm_pop_up">ConfirmPopUp</string>
+    <string name="smsCode">Confirm Code\n</string>
 </resources>

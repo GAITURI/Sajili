@@ -1,32 +1,43 @@
 package com.mark.ui
 
+import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.google.firebase.FirebaseException
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.PhoneAuthCredential
+import com.google.firebase.auth.PhoneAuthOptions
+import com.google.firebase.auth.PhoneAuthProvider
 import com.mark.data.AuthResponse
 import com.mark.data.AuthService
+import com.mark.data.FirebaseTokenRequest
 import com.mark.data.LoginRequest
 import com.mark.data.NetworkModule.safeApiCall
 import com.mark.data.RegisterRequest
 import com.mark.data.SajiliApiException
 import com.mark.data.TokenRepository
+import com.mark.ui.kyc.NewUserReg
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 
 //managing authentication state in an Android application
 sealed class AuthResult {
-data object Loading: AuthResult() //is in progress
+    data object Loading: AuthResult() //is in progress
     data class Success(val message:String? = null, val authResponse: AuthResponse?= null): AuthResult()
     data class Error(val message: String?,val statusCode:Int?): AuthResult()
     data object Idle: AuthResult() //this is the initial state
-
+    data object  CodeSent:AuthResult()
 }
 //profile responseUI State Sealed class
 
@@ -35,22 +46,15 @@ class AuthViewModel @Inject constructor(
 private val authService:AuthService, //inject AuthService
 private val tokenRepository: TokenRepository //inject token repository
 ): ViewModel(){
-    //mutable stateflow to hold the current state of authentication operations
-    //mutable stateflow is a state holder,
-            //its mutable , its value property can be updated to emit new states
-   // <AuthResult> this is the generic type parameter for the mutable stateflow
-            //it specifies that this sealed class has pre defined states for authentication
-    private val _registrationState= MutableStateFlow<AuthResult>(AuthResult.Idle)
-    val registrationState: StateFlow<AuthResult> = _registrationState.asStateFlow()
-
-    private val _loginState = MutableStateFlow<AuthResult>(AuthResult.Idle)
-    val loginState:StateFlow<AuthResult> = _loginState.asStateFlow()
-
+private val auth= FirebaseAuth.getInstance()
+private val _authState= MutableStateFlow<AuthResult>(AuthResult.Idle)
+val authState=_authState.asStateFlow()
 //UI input states (mutable, used by COMPOSE UI)
-    var phoneNumberInput by mutableStateOf("")
-    var passwordInput by mutableStateOf("")
-     var confirmPinInput by mutableStateOf("")
 
+    var phoneNumberInput by mutableStateOf("")
+    var smsCodeInput by mutableStateOf("")
+
+    private var verificationId:String?=null
 
 //user authentication status and JWT token
     var isAuthenticated by mutableStateOf(false)
@@ -61,128 +65,96 @@ private val tokenRepository: TokenRepository //inject token repository
         isAuthenticated= jwtToken != null
     }
 
-    //function to get the authenticated API service(provides current JWT token)
-
-
-
-    fun register(){
-        if (phoneNumberInput.isBlank() || passwordInput.isBlank() ||confirmPinInput.isBlank()){
-            _registrationState.value= AuthResult.Error("All fields are required", statusCode = -1)
-            return
-        }
-        if (passwordInput != confirmPinInput) {
-            _registrationState.value = AuthResult.Error("PINs do not match.", statusCode = -1)
-            return
-        }
-        _registrationState.value= AuthResult.Loading
-        viewModelScope.launch{
-            try {
-                val request = RegisterRequest(phoneNumber= phoneNumberInput, pin=passwordInput,confirmPin=confirmPinInput)
-                val result = safeApiCall { authService.register(request) }
-
-            result.onSuccess { response ->
-                _registrationState.value = AuthResult.Success(response.message)
-                //clear fields after successful registration
-                phoneNumberInput =""
-                passwordInput =""
-
-
-            }.onFailure { throwable ->
-                val errorMessage = when(throwable){
-                    is SajiliApiException ->throwable.message ?:"Registration failed"
-                    else -> "An unexpected error occurred: ${throwable.message}"
+//func to handle the first step: send the SMS code
+    fun sendVerificationCode(activityContext:Context){
+        _authState.value= AuthResult.Loading //initial function state
+        val activity= activityContext as? androidx.fragment.app.FragmentActivity
+       if(activity == null){
+           _authState.value= AuthResult.Error("Activity context is required for Firebase phone auth ", null)
+        return
+       }
+      val options= PhoneAuthOptions.newBuilder(auth)
+            .setPhoneNumber(phoneNumberInput)
+            .setTimeout(100L, TimeUnit.SECONDS)
+            .setActivity(activity)
+            .setCallbacks(object : PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
+                    override  fun onVerificationCompleted(credential: PhoneAuthCredential){
+                       viewModelScope.launch {
+                           signInWithFirebase(credential)
+                       }
+                    }
+                override fun onVerificationFailed(e: FirebaseException){
+                    _authState.value= AuthResult.Error(e.message, null)
                 }
-                val statusCode = (throwable as? SajiliApiException)?.statusCode
-                _registrationState.value = AuthResult.Error(errorMessage, statusCode)
-                println("Registration Error: ${throwable.stackTraceToString()}")
+                override fun onCodeSent(id:String, token:PhoneAuthProvider.ForceResendingToken){
+                    _authState.value= AuthResult.CodeSent
+                    verificationId= id
+                }
 
-            }
-            }
-            catch (e:Exception){
-                _registrationState.value =
-                    AuthResult.Error("Network error: ${e.message}", statusCode = -1)
-                println("Network Error during registration: ${e.stackTraceToString()}")
-            }
+            })
+            .build()
+    PhoneAuthProvider.verifyPhoneNumber(options)
+    }
+    fun verifySmsCode(){
+        _authState.value= AuthResult.Loading
+        if (verificationId== null  || smsCodeInput.isBlank()){
+            _authState.value= AuthResult.Error("Sms Code orVerification Id is missing",null)
+       return
+        }
+        val credential= PhoneAuthProvider.getCredential(verificationId!!, smsCodeInput)
+        viewModelScope.launch{
+            signInWithFirebase(credential)
         }
     }
 
-fun login(){
-    _loginState.value = AuthResult.Loading
-    viewModelScope.launch {
+
+//helper function to sign in with firebase and then verify the token with my backend
+    private suspend fun signInWithFirebase(credential: PhoneAuthCredential) {
         try{
-            val request = LoginRequest(phoneNumber=phoneNumberInput,pin=passwordInput)
-            val result = safeApiCall { authService.login(request) }
-        result.onSuccess { authResponse->
-            jwtToken= authResponse.jwt // store token
-            isAuthenticated = jwtToken !=null //update auth status
-            tokenRepository.saveToken(jwtToken!!)
-            _loginState.value = AuthResult.Success("Login Successful!", authResponse)
-
-            passwordInput=""
-
-        }.onFailure { throwable ->
-            val errorMessage = when (throwable){
-                is SajiliApiException ->throwable.message?: "Login failed."
-                else -> "An unexpected error occurred: ${throwable.message}"
+            val authResult= auth.signInWithCredential(credential).await()
+            val idToken= authResult.user?.getIdToken(true)?.await()?.token
+            if(idToken != null){
+                verifyTokenWithBackend(idToken)
+            }else{
+                _authState.value= AuthResult.Error("Failed to get Firebase ID token", null)
             }
-            val statusCode = (throwable as? SajiliApiException)?.statusCode
-                _loginState.value = AuthResult.Error(errorMessage, statusCode)
-                println("Login error:{throwable.stackTraceToString()}")
+        }catch (e:Exception){
+            _authState.value= AuthResult.Error(e.message, null)
+        }
+    }
+//    Final step:send the Firebase token to your backend
+    private suspend fun verifyTokenWithBackend(idToken: String) {
+        val request= FirebaseTokenRequest(idToken)
+        val result = safeApiCall { authService.verifyToken(request) }
+        result.onSuccess { authResponse->
+            val newJwtToken= authResponse.jwt
+            if(newJwtToken != null){
+                tokenRepository.saveToken(newJwtToken)
+                jwtToken= newJwtToken
+                isAuthenticated=true
+                _authState.value= AuthResult.Success("Login Successful!", newJwtToken)
+        }else{
+            _authState.value= AuthResult.Error("Backend did not provide a jwt Token.", null)
+        }
 
+        }.onFailure { throwable->
+            val errorMessage= throwable.message?:"Failed to verify token with backend."
+            _authState.value=AuthResult.Error(errorMessage, null)
 
         }
 
-        } catch (e:Exception){
-            _loginState.value= AuthResult.Error("Network error: ${e.message}", statusCode = -1)
-            println("Network error during login: ${e.stackTraceToString()}")
-        }
-    }
-}
-    // Example of using a protected endpoint
-//    fun getProtectedData() {
-//        if (jwtToken.isNullOrBlank()) {
-//            _loginState.value = AuthResult.Error("Not authenticated. Please log in.")
-//            return
-//        }
-//        _loginState.value = AuthResult.Loading // Can use a separate state for data loading if preferred
-//        viewModelScope.launch {
-//            try {
-//                // Use the authenticated API service
-//                val result = RetrofitClient.safeApiCall {
-//                    getAuthenticatedApiService().getProtectedData("Bearer $jwtToken")
-//                }
-//
-//                result.onSuccess { messageResponse ->
-//                    _loginState.value = AuthResult.Success(messageResponse.message)
-//                }.onFailure { throwable ->
-//                    val errorMessage = when (throwable) {
-//                        is SajiliApiException -> throwable.message ?: "Failed to fetch data."
-//                        else -> "An unexpected error occurred: ${throwable.message}"
-//                    }
-//                    val statusCode = (throwable as? SajiliApiException)?.statusCode
-//                    _loginState.value = AuthResult.Error(errorMessage, statusCode)
-//                    println("Protected Data Error: ${throwable.stackTraceToString()}")
-//                    if (throwable is SajiliApiException && throwable.statusCode == 401) {
-//                        logout() // Log out if token is invalid/expired
-//                    }
-//                }
-//            } catch (e: Exception) {
-//                _loginState.value = AuthResult.Error("Network error: ${e.message}")
-//                println("Network Error fetching protected data: ${e.stackTraceToString()}")
-//            }
-//        }
-//    }
 
-fun logout(){
-    jwtToken = null
-    isAuthenticated = false
-    phoneNumberInput=""
-    passwordInput=""
-    _loginState.value= AuthResult.Idle
-    _registrationState.value= AuthResult.Idle
-}
-    fun clearAuthStates(){
-        _registrationState.value= AuthResult.Idle
-        _loginState.value = AuthResult.Idle
     }
+
+
+
+    fun clearAuthStates() {
+        _authState.value = AuthResult.Idle
+        phoneNumberInput = ""
+        smsCodeInput = ""
+        jwtToken = null // Clear token
+        isAuthenticated = false // Set to false
+    }
+
+
 }
