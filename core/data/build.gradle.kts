@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.compose.compiler)
     id("com.google.dagger.hilt.android")
+    
     id("kotlin-kapt")
 }
 
@@ -46,14 +47,19 @@ dependencies {
     implementation(libs.material)
 //    retrofit and OkHttp
     implementation(libs.converter.gson)
-    implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation(libs.okhttp.loggingInterceptor)
 //    hilt dependencies
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
+// Import the Firebase BoM (Bill of Materials)
+    // This manages all Firebase library versions for you
+    implementation(platform(libs.firebase.bom))
 
+    // Add the Firebase Authentication SDK for Android
+    implementation(libs.firebase.auth)
+    // Kotlin Coroutines for await() on Firebase tasks
+    implementation(libs.kotlinx.coroutines.play.services)
     implementation(libs.androidx.runtime)
-    implementation(libs.androidx.lifecycle.viewmodel.android)
     implementation(libs.androidx.lifecycle.viewmodel.android)
     implementation(libs.androidx.espresso.core)
     testImplementation(libs.junit)

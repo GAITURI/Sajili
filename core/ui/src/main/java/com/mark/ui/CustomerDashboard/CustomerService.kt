@@ -269,14 +269,7 @@ fun CustomerDashboardScreen(profileService: Profile) {
                 CustomerServiceItem(Icons.Default.AccountCircle, "Existing Client"),
                 CustomerServiceItem(Icons.Default.Add, "New KYC Client"),
                 CustomerServiceItem(Icons.Outlined.Notifications,"SIM SWAP"),
-                CustomerServiceItem(Icons.Outlined.MailOutline, "Viral Voucher Cash Out"),
-                CustomerServiceItem(Icons.Outlined.ShoppingCart, "Cash In"),
-                CustomerServiceItem(Icons.Outlined.Phone, "Airtime/Bundle"),
-                CustomerServiceItem(Icons.Outlined.PlayArrow, "Agent Float Transfer"),
-                CustomerServiceItem(Icons.Outlined.ShoppingCart, "Bill Payments"),
-                CustomerServiceItem(Icons.Outlined.CheckCircle, "Retailer EVD Sales"),
-                CustomerServiceItem(Icons.Outlined.DateRange, "MNP"),
-                CustomerServiceItem(Icons.Outlined.Delete, "De-Registration")
+
 
             )
             //lazy vertical grid is designed to display a potentially large number of items in a grid format without creating and laying out all items at once

@@ -1,5 +1,6 @@
 package com.mark.ui
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -29,6 +30,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,6 +39,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -47,13 +50,17 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegistrationScreen(
-    onConfirmRegistrationClick: (String, String, String)-> Unit,
-    onLoginClick: ()->Unit
+    onSmsCodeSent:()-> Unit, //this callback navigates to confirmPopup
+    onLoginClick: ()->Unit,
+    viewModel: AuthViewModel= hiltViewModel() //inject the viewModel
 ){
+    val context= LocalContext.current
+    val authState by viewModel.authState.collectAsState()
     var phoneNumber by remember{mutableStateOf("")}
     var pin by remember { mutableStateOf("") }
     var confirmPin by remember {mutableStateOf("")}
@@ -193,7 +200,17 @@ fun RegistrationScreen(
                         )
                         Spacer(modifier = Modifier.height(30.dp))
                         Button(
-                            onClick = { onConfirmRegistrationClick(phoneNumber, pin, confirmPin) },
+                            onClick = {
+                                if(pin == confirmPin && pin.isNotEmpty()){
+//                                    1. Assign Data to ViewModel
+                                    viewModel.phoneNumberInput= phoneNumber
+                                    viewModel.pinInput = pin
+//                                    2. Trigger Sms Function
+                                    viewModel.sendVerificationCode(context)
+                                }else{
+                                    Toast.makeText(context, "Pins do not match!", Toast.LENGTH_SHORT).show()
+                                }
+                            },
                             modifier = Modifier
                                 .width(300.dp)
                                 .height(50.dp),
@@ -226,15 +243,4 @@ fun RegistrationScreen(
 
     }
 }
-@Preview(showBackground= true, name= "Registration Screen Preview")
-@Composable
-fun RegistrationScreenPreview(){
-    RegistrationScreen(
-        onConfirmRegistrationClick = {phoneNumber, pin, confirmPin->
 
-        },
-        onLoginClick = {
-
-        }
-    )
-}

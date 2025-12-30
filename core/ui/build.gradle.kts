@@ -67,9 +67,11 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.espresso.core)
     implementation(project(":core:data"))
-    implementation(project(":core:data"))
-    implementation(project(":core:data"))
+
     implementation(libs.hilt.android)
+
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
     implementation(libs.androidx.hilt.navigation.compose)
     kapt(libs.hilt.compiler)
     testImplementation(libs.junit)

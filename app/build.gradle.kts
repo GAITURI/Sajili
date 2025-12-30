@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.compose.compiler)
     id("kotlin-kapt")
+    alias(libs.plugins.google.services)
     alias(libs.plugins.hilt)
 }
 
@@ -58,6 +59,8 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.7.7")
     implementation(project(":core:ui"))
     implementation(project(":core:data"))
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

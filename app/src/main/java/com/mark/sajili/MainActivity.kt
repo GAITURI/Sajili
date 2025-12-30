@@ -38,7 +38,7 @@ fun MainApp(){
         LoginScreen(
             onLoginSuccess ={_, _ ->
 //                on successful login navigate to the customer dashboard
-                navController.navigate(AuthAgentDestination.CUSTOMER_DASHBOARD_ROUTE)
+//                navController.navigate(AuthAgentDestination.CUSTOMER_DASHBOARD_ROUTE)
             },
             onForgotPasswordClick={
                 navController.navigate(AuthAgentDestination.CUSTOMER_DASHBOARD_ROUTE)
