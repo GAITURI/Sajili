@@ -4,9 +4,9 @@ import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.PhoneAuthCredential
@@ -15,15 +15,11 @@ import com.google.firebase.auth.PhoneAuthProvider
 import com.mark.data.AuthResponse
 import com.mark.data.AuthService
 import com.mark.data.FirebaseTokenRequest
-import com.mark.data.LoginRequest
 import com.mark.data.NetworkModule.safeApiCall
 import com.mark.data.RegisterRequest
-import com.mark.data.SajiliApiException
 import com.mark.data.TokenRepository
-import com.mark.ui.kyc.NewUserReg
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
@@ -32,8 +28,9 @@ import javax.inject.Inject
 
 
 //managing authentication state in an Android application
+//it models every possible authentication state the UI can be in
 sealed class AuthResult {
-    data object Loading: AuthResult() //is in progress
+    data object Loading: AuthResult() //on-going authentication work
     data class Success(val message:String? = null, val authResponse: AuthResponse?= null): AuthResult()
     data class Error(val message: String?,val statusCode:Int?): AuthResult()
     data object Idle: AuthResult() //this is the initial state
@@ -43,36 +40,55 @@ sealed class AuthResult {
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(
-private val authService:AuthService, //inject AuthService
+private val authService:AuthService, //inject AuthService (retrofit backend service)
 private val tokenRepository: TokenRepository //inject token repository
 ): ViewModel(){
-private val auth= FirebaseAuth.getInstance()
+private val auth= FirebaseAuth.getInstance() //handles sms verification and issues firebase ID tokens
 private val _authState= MutableStateFlow<AuthResult>(AuthResult.Idle)
 val authState=_authState.asStateFlow()
-//UI input states (mutable, used by COMPOSE UI)
+//UI input states (mutable, used by COMPOSE UI) the UI observes authState and redraws automatically
 
     var phoneNumberInput by mutableStateOf("")
     var smsCodeInput by mutableStateOf("")
+    var pinInput by mutableStateOf("") //temporary storage for r
+    private var verificationId:String?=null //stores Firebase verification session ID R
 
-    private var verificationId:String?=null
-
-//user authentication status and JWT token
+//user authentication status and JWT token Token persistence &auth states
     var isAuthenticated by mutableStateOf(false)
     var jwtToken by mutableStateOf<String?>(null)
-
+//it enables auto-login and session restoration after app restarts
     init {
         jwtToken= tokenRepository.getToken()
         isAuthenticated= jwtToken != null
     }
-
+    private suspend fun registerWithBackend(idToken: String){
+//        creates a backend registration payload
+        val request= RegisterRequest(
+            idToken = idToken, //firebase ID token proves phone ownership
+            phoneNumber = phoneNumberInput, //associates user with phone number
+            pin = pinInput,
+            confirmPin = pinInput
+        )
+        //executes a backend call safely
+        val result = safeApiCall { authService.register(request) }
+        result.onSuccess{
+//        this success state is what triggers the Pop-up in the UI
+                authResponse-> _authState.value= AuthResult.Success("Registration Successful!", authResponse)
+            pinInput=""
+        }.onFailure {throwable->
+            _authState.value= AuthResult.Error(throwable.message?: "Registration Failed", null)
+        }
+    }
 //func to handle the first step: send the SMS code
+//    the UI Enters Loading
     fun sendVerificationCode(activityContext:Context){
         _authState.value= AuthResult.Loading //initial function state
-        val activity= activityContext as? androidx.fragment.app.FragmentActivity
+        val activity= activityContext as? FragmentActivity
        if(activity == null){
            _authState.value= AuthResult.Error("Activity context is required for Firebase phone auth ", null)
         return
        }
+    //begin Firebase phone auth configuration
       val options= PhoneAuthOptions.newBuilder(auth)
             .setPhoneNumber(phoneNumberInput)
             .setTimeout(100L, TimeUnit.SECONDS)
@@ -114,7 +130,11 @@ val authState=_authState.asStateFlow()
             val authResult= auth.signInWithCredential(credential).await()
             val idToken= authResult.user?.getIdToken(true)?.await()?.token
             if(idToken != null){
+                if (pinInput.isNotEmpty()){
+                    registerWithBackend(idToken)
+                }else{
                 verifyTokenWithBackend(idToken)
+                }
             }else{
                 _authState.value= AuthResult.Error("Failed to get Firebase ID token", null)
             }
@@ -122,6 +142,7 @@ val authState=_authState.asStateFlow()
             _authState.value= AuthResult.Error(e.message, null)
         }
     }
+
 //    Final step:send the Firebase token to your backend
     private suspend fun verifyTokenWithBackend(idToken: String) {
         val request= FirebaseTokenRequest(idToken)
@@ -132,7 +153,7 @@ val authState=_authState.asStateFlow()
                 tokenRepository.saveToken(newJwtToken)
                 jwtToken= newJwtToken
                 isAuthenticated=true
-                _authState.value= AuthResult.Success("Login Successful!", newJwtToken)
+                _authState.value= AuthResult.Success("Login Successful!", authResponse)
         }else{
             _authState.value= AuthResult.Error("Backend did not provide a jwt Token.", null)
         }
@@ -152,9 +173,14 @@ val authState=_authState.asStateFlow()
         _authState.value = AuthResult.Idle
         phoneNumberInput = ""
         smsCodeInput = ""
+        pinInput=""
         jwtToken = null // Clear token
         isAuthenticated = false // Set to false
     }
 
 
 }
+
+
+
+

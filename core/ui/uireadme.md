@@ -20,3 +20,9 @@ This is the visible part of the app where the user interacts with the applicatio
 -When the UI calls function, the ViewModel uses the injected authService to make network calls.
 - If the call succeeds, it uses the injected tokenRepository to save the JWT token
 - It then updates its stateFlow(_loginState), which the LoginScreen is observing causing the UI to change.
+- Handling Firebase Phone Authentication (SMS OTP)
+- Communicating with the Spring Boot Backend
+- Managing JWT-based authentication
+- Exposing authentication state to a Jetpack compose UI
+- Persisting tokens securely via TokenRepository
+- Firebase verifies the phone ->Backend verifies Firebase ->Backend issues JWT -> App stores JWT

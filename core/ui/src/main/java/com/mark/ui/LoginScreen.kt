@@ -161,7 +161,7 @@ val context= LocalContext.current
 //                    Spacer(modifier = Modifier.height(15.dp))
 
                     Button(
-                        onClick = { viewModel.sendVerificationCode() },
+                        onClick = { viewModel.sendVerificationCode(context) },
                         modifier = Modifier
                             .width(300.dp)
                             .height(50.dp),
@@ -216,6 +216,8 @@ fun LoginScreenPreview(){
 
         },
         onForgotPasswordClick = {},
-        onSignUpClick = {})
+        onSignUpClick = {},
+        onSmsCodeSent = {}
+    )
 
  }

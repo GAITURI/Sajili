@@ -35,15 +35,18 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.text.input.KeyboardType
-
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+//its a user interface to enter the 6 digit code received via sms from Firebase
 @Composable
 fun ConfirmPopUp(
     onVerificationSuccess: (String) ->  Unit, //callback to navigate to main app
+//a viewmodel injected via Hilt to handle the logic
+    onNavigateToLogin: () -> Unit,
     viewModel: AuthViewModel= hiltViewModel()
 ) {
-    val authState by viewModel.authState.collectAsState()
+    val authState by viewModel.authState.collectAsStateWithLifecycle()
     val isLoading = authState is AuthResult.Loading
-//    LaunchedEffect to handle navigation after successful verfication
+//    LaunchedEffect to handle navigation after successful verification
     LaunchedEffect(key1 = authState) {
         if (authState is AuthResult.Success) {
             val token = (authState as AuthResult.Success).idToken ?: ""
