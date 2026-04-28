@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.currentRecomposeScope
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.text.input.KeyboardType
@@ -47,9 +48,11 @@ fun ConfirmPopUp(
     val authState by viewModel.authState.collectAsStateWithLifecycle()
     val isLoading = authState is AuthResult.Loading
 //    LaunchedEffect to handle navigation after successful verification
+    //passing the backend-generated JWT TO MY NAVIGATION
     LaunchedEffect(key1 = authState) {
-        if (authState is AuthResult.Success) {
-            val token = (authState as AuthResult.Success).idToken ?: ""
+        val currentState=authState
+        if (currentState is AuthResult.Success) {
+            val token = currentState.authResponse?.jwt.orEmpty()
             onVerificationSuccess(token)
             viewModel.clearAuthStates()
         }
