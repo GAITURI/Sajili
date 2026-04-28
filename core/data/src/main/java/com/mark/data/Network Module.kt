@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Named
 import javax.inject.Singleton
 
-const val BASE_URL= "http://postgres-production-45b8.up.railway.app"
+const val BASE_URL= "192.168.100.5"
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -34,7 +34,6 @@ object NetworkModule{
     @Provides
     fun provideGSON(): Gson {
         return GsonBuilder()
-            .setLenient()
             .create()
     }
 
