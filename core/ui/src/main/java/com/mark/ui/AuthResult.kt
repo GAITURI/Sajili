@@ -1,6 +1,7 @@
 package com.mark.ui
 
 import android.content.Context
+import androidx.activity.ComponentActivity
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -83,7 +84,7 @@ val authState=_authState.asStateFlow()
 //    the UI Enters Loading
     fun sendVerificationCode(activityContext:Context){
         _authState.value= AuthResult.Loading //initial function state
-        val activity= activityContext as? FragmentActivity
+        val activity= activityContext as? ComponentActivity
        if(activity == null){
            _authState.value= AuthResult.Error("Activity context is required for Firebase phone auth ", null)
         return

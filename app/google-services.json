@@ -6,30 +6,12 @@
     "storage_bucket": "fir-workout-c94f5.firebasestorage.app"
   },
   "client": [
+
     {
       "client_info": {
-        "mobilesdk_app_id": "1:245929255945:android:fee38643a2ecbac49484d8",
+        "mobilesdk_app_id": "1:245929255945:android:8a5a52f1a0ea35a09484d8",
         "android_client_info": {
-          "package_name": "com.Mark.Sajili"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyBRe3lxxnIpSMTrKJ8w5Dz4aawT21KbWqs"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:245929255945:android:0d127fae88047f1e9484d8",
-        "android_client_info": {
-          "package_name": "com.example.hotel"
+          "package_name": "com.mark.sajili"
         }
       },
       "oauth_client": [],
