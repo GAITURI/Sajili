@@ -5,16 +5,18 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.mark.ui.AuthAgentDestination
+import com.mark.ui.AuthViewModel
+import com.mark.ui.ConfirmPopUp
 import com.mark.ui.CustomerDashboard.CustomerDashboardScreen
 import com.mark.ui.LoginScreen
 import com.mark.ui.RegistrationScreen
 import dagger.hilt.android.AndroidEntryPoint
-import dagger.hilt.android.HiltAndroidApp
-
 
 
 @AndroidEntryPoint
@@ -32,16 +34,37 @@ class MainActivity : ComponentActivity() {
 fun MainApp(){
 //    the nav controller is created once and used for all navigation
     val navController= rememberNavController()
+    val authViewModel: AuthViewModel= hiltViewModel()
     NavHost(navController= navController, startDestination= AuthAgentDestination.LOGIN_ROUTE){
-//        COMPOSABLE FOR THE Login Screen, which is in the "core:ui" module
+        composable(AuthAgentDestination.CONFIRM_OTP_ROUTE){
+            ConfirmPopUp(
+                onVerificationSuccess = { jwtToken ->
+                    navController.navigate(AuthAgentDestination.CUSTOMER_DASHBOARD_ROUTE) {
+                        popUpTo(AuthAgentDestination.LOGIN_ROUTE) { inclusive = true }
+                    }
+                },
+                onNavigateToLogin = {
+                    navController.navigate(AuthAgentDestination.LOGIN_ROUTE)
+                },
+                viewModel = TODO()
+            )
+        }
+
+        //        COMPOSABLE FOR THE Login Screen, which is in the "core:ui" module
+
     composable(AuthAgentDestination.LOGIN_ROUTE){
         LoginScreen(
             onLoginSuccess ={_, _ ->
 //                on successful login navigate to the customer dashboard
-//                navController.navigate(AuthAgentDestination.CUSTOMER_DASHBOARD_ROUTE)
+                navController.navigate(AuthAgentDestination.CUSTOMER_DASHBOARD_ROUTE){
+                    popUpTo(AuthAgentDestination.LOGIN_ROUTE){inclusive= true}
+                }
             },
             onForgotPasswordClick={
                 navController.navigate(AuthAgentDestination.CUSTOMER_DASHBOARD_ROUTE)
+            },
+            onSmsCodeSent = {
+                navController.navigate(AuthAgentDestination.CONFIRM_OTP_ROUTE)
             },
             onSignUpClick={
 //                navigate to the registration screen
@@ -50,13 +73,18 @@ fun MainApp(){
 
         )
     }
+
     composable(AuthAgentDestination.REGISTRATION_ROUTE){
+
         RegistrationScreen(
-            onConfirmRegistrationClick={_, _, _ ->
-//                once user is successfully registered navigate back to login
-                        navController.navigate(AuthAgentDestination.LOGIN_ROUTE)
-                                       },
+            viewModel = authViewModel,
+            onSmsCodeSent ={
+//                when sms is sent, navigate to the verification popup/screen
+                navController.navigate(AuthAgentDestination.CONFIRM_OTP_ROUTE)
+            },
+
             onLoginClick={
+
                 navController.navigate(AuthAgentDestination.LOGIN_ROUTE)
 
             }

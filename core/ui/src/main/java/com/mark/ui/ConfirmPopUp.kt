@@ -43,18 +43,22 @@ fun ConfirmPopUp(
     onVerificationSuccess: (String) ->  Unit, //callback to navigate to main app
 //a viewmodel injected via Hilt to handle the logic
     onNavigateToLogin: () -> Unit,
-    viewModel: AuthViewModel= hiltViewModel()
+    viewModel: AuthViewModel
 ) {
     val authState by viewModel.authState.collectAsStateWithLifecycle()
     val isLoading = authState is AuthResult.Loading
 //    LaunchedEffect to handle navigation after successful verification
     //passing the backend-generated JWT TO MY NAVIGATION
     LaunchedEffect(key1 = authState) {
-        val currentState=authState
-        if (currentState is AuthResult.Success) {
-            val token = currentState.authResponse?.jwt.orEmpty()
-            onVerificationSuccess(token)
-            viewModel.clearAuthStates()
+        when (authState){
+            is AuthResult.Success ->{
+                val token = (authState as AuthResult.Success).authResponse?.jwt.orEmpty()
+                onVerificationSuccess(token)
+            }
+            is AuthResult.Error ->{
+                println("Backend/Firebase Error: ${authState as AuthResult.Error}.message")
+            }
+            else -> {}
         }
 
     }

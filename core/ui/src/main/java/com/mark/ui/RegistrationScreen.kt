@@ -1,6 +1,9 @@
 package com.mark.ui
 
+import android.content.Context
+import android.content.ContextWrapper
 import android.widget.Toast
+import androidx.activity.ComponentActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -30,6 +33,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -51,7 +55,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+fun Context.findActivity():
+        ComponentActivity?= when(this){
+    is ComponentActivity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
 
+}
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegistrationScreen(
@@ -61,11 +71,24 @@ fun RegistrationScreen(
 ){
     val context= LocalContext.current
     val authState by viewModel.authState.collectAsState()
+    val isLoading= authState is AuthResult.Loading
     var phoneNumber by remember{mutableStateOf("")}
     var pin by remember { mutableStateOf("") }
     var confirmPin by remember {mutableStateOf("")}
     var pinVisibility by remember { mutableStateOf(false) }
     var confirmPinVisibility by remember{ mutableStateOf(false) }
+LaunchedEffect(authState) {
+    when (authState){
+        is AuthResult.CodeSent -> {
+            onSmsCodeSent() // This triggers the navigation to ConfirmPopUp
+        }
+        is AuthResult.Error -> {
+            // Print the error to Logcat to see why Firebase is failing
+            println("Firebase Error: ${(authState as AuthResult.Error).message}")
+        }
+        else -> {}
+    }
+}
 
     Scaffold(
         topBar = { AppToolbar(title = stringResource(id= R.string.register)) }
@@ -203,14 +226,22 @@ fun RegistrationScreen(
                             onClick = {
                                 if(pin == confirmPin && pin.isNotEmpty()){
 //                                    1. Assign Data to ViewModel
-                                    viewModel.phoneNumberInput= phoneNumber
+                                    val formattedPhone= if (phoneNumber.startsWith("+"))
+                                        phoneNumber else "+254${phoneNumber.removePrefix("0")}"
+                                    viewModel.phoneNumberInput= formattedPhone
                                     viewModel.pinInput = pin
-//                                    2. Trigger Sms Function
-                                    viewModel.sendVerificationCode(context)
+                                    val activity = context.findActivity()
+                                    if (activity !=null){
+                                        viewModel.sendVerificationCode(activity)
+                                    }else {
+                                        println("Error: Could not find ComponentActivity")
+                                    }
+//
                                 }else{
                                     Toast.makeText(context, "Pins do not match!", Toast.LENGTH_SHORT).show()
                                 }
                             },
+                            enabled=!isLoading,
                             modifier = Modifier
                                 .width(300.dp)
                                 .height(50.dp),
@@ -218,11 +249,13 @@ fun RegistrationScreen(
                             shape = RoundedCornerShape(20.dp),
                             elevation = ButtonDefaults.buttonElevation(defaultElevation = 5.dp)
                         ) {
-                            Text(
-                                text = stringResource(id = R.string.confirm_registration),
-                                fontSize = 18.sp,
-                                color = MaterialTheme.colorScheme.onPrimary
-                            )
+                            if (isLoading) {
+                                Text("Sending SMS...") // Or a CircularProgressIndicator()
+                            } else {
+                                Text(stringResource(id = R.string.confirm_registration))
+                            }
+
+
                         }
                         Spacer(modifier = Modifier.weight(1f))
                         //already have an account? Login text
