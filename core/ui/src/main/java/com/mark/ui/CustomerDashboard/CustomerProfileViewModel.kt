@@ -3,11 +3,14 @@ package com.mark.ui.CustomerDashboard
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mark.data.Profile
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class CustomerProfileViewModel(
+@HiltViewModel
+class CustomerProfileViewModel @Inject constructor(
     private val profileService: Profile
 ): ViewModel(){
     private val _uiState = MutableStateFlow<ProfileUiState>(ProfileUiState.Loading)

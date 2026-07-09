@@ -119,9 +119,7 @@ object NetworkModule{
                 val errorBodyString= response.errorBody()?.string()
                 val errorResponse= try{
                     gson.fromJson(errorBodyString, ErrorResponse::class.java)
-                } catch (e:Exception){
-                    null
-                }
+                } catch (e:Exception){ null }
                 val errorMessage= errorResponse?.message ?:"Unknown error occurred"
                 Result.failure(SajiliApiException(errorMessage, response.code(),errorResponse))
             }

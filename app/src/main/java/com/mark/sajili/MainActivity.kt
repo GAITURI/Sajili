@@ -6,7 +6,6 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -36,8 +35,10 @@ fun MainApp(){
     val navController= rememberNavController()
     val authViewModel: AuthViewModel= hiltViewModel()
     NavHost(navController= navController, startDestination= AuthAgentDestination.LOGIN_ROUTE){
+
         composable(AuthAgentDestination.CONFIRM_OTP_ROUTE){
             ConfirmPopUp(
+                viewModel=authViewModel,
                 onVerificationSuccess = { jwtToken ->
                     navController.navigate(AuthAgentDestination.CUSTOMER_DASHBOARD_ROUTE) {
                         popUpTo(AuthAgentDestination.LOGIN_ROUTE) { inclusive = true }
@@ -46,7 +47,6 @@ fun MainApp(){
                 onNavigateToLogin = {
                     navController.navigate(AuthAgentDestination.LOGIN_ROUTE)
                 },
-                viewModel = TODO()
             )
         }
 
@@ -54,6 +54,7 @@ fun MainApp(){
 
     composable(AuthAgentDestination.LOGIN_ROUTE){
         LoginScreen(
+            viewModel = authViewModel,
             onLoginSuccess ={_, _ ->
 //                on successful login navigate to the customer dashboard
                 navController.navigate(AuthAgentDestination.CUSTOMER_DASHBOARD_ROUTE){
@@ -93,9 +94,7 @@ fun MainApp(){
     }
 //        Composable for the Registration Screen,
         composable(AuthAgentDestination.CUSTOMER_DASHBOARD_ROUTE){
-            CustomerDashboardScreen(
-                profileService = TODO()
-            )
+            CustomerDashboardScreen()
         }
 
     }

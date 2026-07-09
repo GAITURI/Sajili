@@ -58,6 +58,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mark.data.Profile
 
@@ -77,9 +78,8 @@ class CustomerServiceActivity: ComponentActivity(){
 }
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CustomerDashboardScreen(profileService: Profile) {
-    val factory = CustomerProfileViewModelFactory(profileService)
-    val viewModel: CustomerProfileViewModel = viewModel(factory= factory)
+fun CustomerDashboardScreen(viewModel:CustomerProfileViewModel= hiltViewModel()) {
+
     val  uiState by viewModel.uiState.collectAsState()
     //scaffold is a pre-defined material design layout structure
     //it gives you slots for common screen elements
@@ -330,15 +330,6 @@ fun CustomerServiceGridItem(item: CustomerServiceItem) {
 //create a fake or mock instance of ProfileServiceImpl
 //the @preview environment is specifically designed to render my composable in isolation
 //without running the full application lifecycle
-@Preview(showBackground = true)
-@Composable
-fun CustomerScreenPreview(){
-    //we can't use demoprofileview directly
-    //since demoprofilepreview is a class and doesn't have a companion object
-    //we need to create an instance of it
-    val demoServiceInstance = DemoProfilePreview()
-    CustomerDashboardScreen(profileService = demoServiceInstance)
-}
 
 
 

@@ -72,9 +72,15 @@ val authState=_authState.asStateFlow()
         )
         //executes a backend call safely
         val result = safeApiCall { authService.register(request) }
-        result.onSuccess{
+        result.onSuccess{response->
 //        this success state is what triggers the Pop-up in the UI
-                authResponse-> _authState.value= AuthResult.Success("Registration Successful!", authResponse)
+
+            _authState.value= AuthResult.Success("Registration Successful!", response)
+            response.jwtToken?.let { token ->
+                tokenRepository.saveToken(token)
+                jwtToken = token
+                isAuthenticated = true
+            }
             pinInput=""
         }.onFailure {throwable->
             _authState.value= AuthResult.Error(throwable.message?: "Registration Failed", null)
@@ -113,6 +119,8 @@ val authState=_authState.asStateFlow()
     PhoneAuthProvider.verifyPhoneNumber(options)
     }
     fun verifySmsCode(){
+        println("DEBUG: verifySmsCode called. ID: $verificationId, Code: $smsCodeInput")
+
         _authState.value= AuthResult.Loading
         if (verificationId== null  || smsCodeInput.isBlank()){
             _authState.value= AuthResult.Error("Sms Code orVerification Id is missing",null)
@@ -149,7 +157,7 @@ val authState=_authState.asStateFlow()
         val request= FirebaseTokenRequest(idToken)
         val result = safeApiCall { authService.verifyToken(request) }
         result.onSuccess { authResponse->
-            val newJwtToken= authResponse.jwt
+            val newJwtToken= authResponse.jwtToken
             if(newJwtToken != null){
                 tokenRepository.saveToken(newJwtToken)
                 jwtToken= newJwtToken
