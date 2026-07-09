@@ -3,8 +3,9 @@ package com.mark.data
 import com.google.gson.annotations.SerializedName
 
 data class AuthResponse(
-    val jwt:String?=null,
-    val phoneNumber: String?=null
+    val phoneNumber: String?=null,
+    @SerializedName("jwtToken")
+    val jwtToken:String?=null
 )
 
 data class ErrorResponse(

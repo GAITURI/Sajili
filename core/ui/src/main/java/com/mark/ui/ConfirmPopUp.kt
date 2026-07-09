@@ -1,5 +1,6 @@
 package com.mark.ui
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -22,21 +23,21 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.currentRecomposeScope
-import androidx.compose.runtime.getValue
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+
+
+
 //its a user interface to enter the 6 digit code received via sms from Firebase
 @Composable
 fun ConfirmPopUp(
@@ -45,6 +46,7 @@ fun ConfirmPopUp(
     onNavigateToLogin: () -> Unit,
     viewModel: AuthViewModel
 ) {
+    val context= LocalContext.current
     val authState by viewModel.authState.collectAsStateWithLifecycle()
     val isLoading = authState is AuthResult.Loading
 //    LaunchedEffect to handle navigation after successful verification
@@ -52,10 +54,12 @@ fun ConfirmPopUp(
     LaunchedEffect(key1 = authState) {
         when (authState){
             is AuthResult.Success ->{
-                val token = (authState as AuthResult.Success).authResponse?.jwt.orEmpty()
+                val token = (authState as AuthResult.Success).authResponse?.jwtToken.orEmpty()
                 onVerificationSuccess(token)
             }
             is AuthResult.Error ->{
+                val errorMessage = (authState as AuthResult.Error).message
+                Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
                 println("Backend/Firebase Error: ${authState as AuthResult.Error}.message")
             }
             else -> {}
